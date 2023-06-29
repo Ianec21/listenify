@@ -10,13 +10,9 @@ import ArrowIcon from "../../assets/icons/arrow.svg";
 import SoundMaxIcon from "../../assets/icons/sound_max.svg";
 import SoundMinIcon from "../../assets/icons/sound_min.svg";
 import SoundMuteIcon from "../../assets/icons/sound_mute.svg";
-import { Input } from "./input";
 
-type AudioInterface = {
-    data: any;
-}
-
-const Audio: FunctionComponent<any> = forwardRef<HTMLElement, AudioInterface>(({data}, ref) => {
+const Audio: FunctionComponent = forwardRef<HTMLDivElement>((props, ref) => {
+    const [data, setData] = useState<any>(null);
     const trackSlider = useRef<any>();
     const audio = useRef<any>();
 
@@ -28,7 +24,8 @@ const Audio: FunctionComponent<any> = forwardRef<HTMLElement, AudioInterface>(({
     const [muted, setMuted] = useState<boolean>(false);
 
     useEffect(() => {
-        if(trackSlider.current && data){
+        console.log(data);
+        if(audio.current && trackSlider.current && typeof(data) == "object"){
             audio.current.src = data.preview;
             audio.current.addEventListener("loadedmetadata", () => {
                 audio.current.play();
@@ -49,7 +46,12 @@ const Audio: FunctionComponent<any> = forwardRef<HTMLElement, AudioInterface>(({
             });
         }
     }, [data]);
-    
+
+    window.addEventListener("storage", () => {
+        const currentTrack: any = localStorage.getItem("currentTrack");
+        setData(JSON.parse(currentTrack) || null);
+    })
+
     const calculateTime = (secs: number) => {
         const minutes = Math.floor(secs / 60);
         const seconds = Math.floor(secs % 60);
@@ -77,30 +79,30 @@ const Audio: FunctionComponent<any> = forwardRef<HTMLElement, AudioInterface>(({
         }
     }
 
-    if(data){
+    if(data != null && data.preview){
         return(
-            <div className="absolute flex bottom-0 w-full bg-gray-200 h-[100px] p-2 items-center justify-around">
-                <audio ref={audio} src={data.preview} preload="metadata"/>
+            <div className="absolute flex bottom-0 w-full bg-slate-300 h-[100px] p-2 items-center justify-around">
+                <audio ref={audio} preload="metadata"/>
                 <div className="flex gap-2 h-[100%] items-center w-1/6">
-                    <Image src={data.album.cover} width={50} height={50} alt="Artist Photo"/>
+                    <Image src={data.cover} width={50} height={50} alt="Artist Photo"/>
     
                     <div className="w-3/4">
                         <h1 className="font-bold truncate">{data.title}</h1>
-                        <p className="text-xs">{data.artist.name}</p>
+                        <p className="text-xs">{data.artist}</p>
                     </div>
     
                     <div>
-                        <FavoriteIcon fill={"none"}/>
+                        <FavoriteIcon className="stroke-slate-600"/>
                     </div>
                 </div>
 
                 <div className="flex flex-col items-center w-2/4">
                     <div className="flex">
-                        <ArrowIcon className="rotate-180 font-lg w-[36px]" fill={"black"}/>
+                        <ArrowIcon className="rotate-180 font-lg w-[36px] fill-slate-600"/>
                         <div onClick={HandlePlayPause}>
-                            {isPlaying ? <PauseIcon className="w-[48px]" fill={"black"}/> : <PlayIcon className="w-[48px]" fill={"black"}/>}
+                            {isPlaying ? <PauseIcon className="w-[48px] fill-slate-600"/> : <PlayIcon className="w-[48px] fill-slate-600"/>}
                         </div>
-                        <ArrowIcon className="rotate w-[36px]" fill={"black"}/>
+                        <ArrowIcon className="rotate w-[36px] fill-slate-600"/>
                     </div>
 
                     <div className="flex gap-2 items-center w-full">
@@ -124,11 +126,11 @@ const Audio: FunctionComponent<any> = forwardRef<HTMLElement, AudioInterface>(({
                 <div className="flex gap-2">
                     <div onClick={HandleMuteClick}>
                         {audioVolume <= 0 || muted ? 
-                            <SoundMuteIcon/> 
+                            <SoundMuteIcon className="fill-slate-600 stroke-slate-600"/> 
                         : audioVolume > 0 && audioVolume < 50 ? 
-                            <SoundMinIcon/> 
+                            <SoundMinIcon className="fill-slate-600 stroke-slate-600"/> 
                         : 
-                        <SoundMaxIcon/>
+                        <SoundMaxIcon className="fill-slate-600 stroke-slate-600"/>
                         }
                     </div>
                     <input 
@@ -145,7 +147,7 @@ const Audio: FunctionComponent<any> = forwardRef<HTMLElement, AudioInterface>(({
         )
     } else {
         return(
-            <div className="absolute flex-col flex bottom-0 w-full bg-gray-200 h-[100px] p-2 items-center justify-center">
+            <div className="absolute flex-col flex bottom-0 w-full bg-slate-300 h-[100px] p-2 items-center justify-center">
                 <div className="flex">
                     <ArrowIcon className="rotate-180 font-lg w-[36px]" fill={"gray"}/>
                     <PlayIcon className="w-[48px]" fill={"gray"}/>
